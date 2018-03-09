@@ -14,24 +14,21 @@
  It will provide 4 x 4 cards for Landscape & 3 x 4 cards for portrait...
  These values can be over written to get custom grid layout...
  */
-static NSInteger row_Portrait = 4;
-static NSInteger col_Portrait = 3;
 
-static NSInteger row_Landscape = 3;
-static NSInteger col_Landscape = 4;
+static const float leading = 57.0f;
+static const float top = 30.0f;
+static const float rowSpace = 41.0f;
+static const float columnSpace = 43.0f;
+static const float gridWidth = 195.0f;
+static const float gridHeight = 147.0f;
 
-static const NSInteger strtPos_Portrait = 57;
-static const NSInteger topSpace_Portrait = 30;
-static NSInteger rowSpace_Portrait = 41;
-static NSInteger colSpace_Portrait = 43;
 
-static const NSInteger strtPos_Landscape = 57;
-static const NSInteger topSpace_Landscape = 30;
-static NSInteger rowSpace_Landscape = 41;
-static NSInteger colSpace_Landscape = 43;
+@interface STGridView()
 
-#define IS_Port(orientation) (orientation == UIInterfaceOrientationPortrait || orientation == UIInterfaceOrientationPortraitUpsideDown)
-#define IS_Landscape(orientation) (orientation == UIDeviceOrientationLandscapeRight || orientation == UIDeviceOrientationLandscapeLeft)
+@property (nonatomic) int rows;
+@property (nonatomic) int columns;
+
+@end
 
 
 #pragma mark - STGridView implementation starts here
@@ -61,10 +58,18 @@ static NSInteger colSpace_Landscape = 43;
     return self;
 }
 
+- (instancetype)initWithCoder:(NSCoder *)aDecoder
+{
+    self = [super initWithCoder:aDecoder];
+    if (self) {
+        [self commonInit];
+    }
+    return self;
+}
+
 - (void) setGridDelegate:(id<UIScrollViewDelegate>)delegate {
     super.delegate = self;
 }
-
 
 
 #pragma mark - inital frame values configuration
@@ -72,34 +77,14 @@ static NSInteger colSpace_Landscape = 43;
 /*
  Implement the following methods to set new values to get custom grid layout as expected...
  */
--(void)setNumberOfColumns:(int)_columns
-{
-    col_Portrait = _columns;
-    col_Landscape = _columns;
-    columns = _columns;
+- (void) commonInit {
+    _rowSpace = rowSpace;
+    _columnSpace = columnSpace;
+    _gridLeading = leading;
+    _gridTop = top;
+    _gridWidth = gridWidth;
+    _gridHeight = gridHeight;
 }
-
--(void)setNumberOfRows:(int)_rows
-{
-    row_Landscape = _rows;
-    row_Landscape = _rows;
-    rows = _rows;
-}
-
--(void)setRowSpace:(int)_rowspace
-{
-    rowSpace_Landscape = _rowspace;
-    rowSpace_Portrait = _rowspace;
-    rowSpace = _rowspace;
-}
-
--(void)setColumnSpace:(int)_columnspace
-{
-    colSpace_Landscape = _columnspace;
-    colSpace_Portrait = _columnspace;
-    colSpace = _columnspace;
-}
-
 
 
 #pragma mark - getter methods
@@ -123,28 +108,28 @@ static NSInteger colSpace_Landscape = 43;
  */
 -(void)getFrames
 {
-    rows = (int)row_Landscape;
-    columns = (int)col_Landscape;
-    rowSpace = (int)rowSpace_Landscape;
-    colSpace = (int)colSpace_Landscape;
-    strtPos = strtPos_Landscape;
-    topSpace = topSpace_Landscape;
+    _rows = 0;
+    float y = _gridTop;
+    while ((y + _gridHeight) <= self.frame.size.height) {
+        y += _gridHeight;
+        y += _rowSpace;
+        _rows++;
+    }
     
-    if(IS_Port([[UIApplication sharedApplication] statusBarOrientation])) {
-        rows = (int)row_Portrait;
-        columns = (int)col_Portrait;
-        rowSpace = (int)rowSpace_Portrait;
-        colSpace = (int)colSpace_Portrait;
-        strtPos = strtPos_Portrait;
-        topSpace = topSpace_Portrait;
+    _columns = 0;
+    float x = _gridLeading;
+    while ((x + _gridWidth) <= self.frame.size.width) {
+        x += _gridWidth;
+        x += _columnSpace;
+        _columns++;
     }
     
     if (!reusableGrids) {
         reusableGrids = [NSMutableDictionary dictionary];
     }
     
-    numberOfGrid = (int)[self.dataSource numberOfGrids];
-    totalPage =  (numberOfGrid % (columns * rows) != 0) ? ((numberOfGrid / (columns * rows)) + 1) : (numberOfGrid / (columns * rows));
+    numberOfGrids = (int)[self.dataSource numberOfGrids];
+    totalPage =  (numberOfGrids % (_columns * _rows) != 0) ? ((numberOfGrids / (_columns * _rows)) + 1) : (numberOfGrids / (_columns * _rows));
     
     self.contentSize = (CGSize) {totalPage * self.frame.size.width, self.frame.size.height};
     self.pagingEnabled = YES;
@@ -167,8 +152,8 @@ static NSInteger colSpace_Landscape = 43;
 /*
  Inital grid load method..
  */
--(void)loadData
-{
+-(void)loadData {
+    
     if (!reusableGrids) {
         reusableGrids = [NSMutableDictionary dictionary];
     }
@@ -207,9 +192,9 @@ static NSInteger colSpace_Landscape = 43;
 {
     if(Page >= 0 && Page <= totalPage)
     {
-        for(int i= (Page * columns * rows); i < ((Page * columns * rows) + (columns * rows)); i++)
+        for(int i= (Page * _columns * _rows); i < ((Page * _columns * _rows) + (_columns * _rows)); i++)
         {
-            if(i < numberOfGrid && i >=0) {
+            if(i < numberOfGrids && i >=0) {
                 STGridCell *gridCell = [self cellForIndex:i];
                 if(!gridCell) {
                     [self createGridAtIndex:i];
@@ -282,11 +267,11 @@ static NSInteger colSpace_Landscape = 43;
 -(CGRect)getFrameForCell:(STGridCell *)gridcell atGridIndex:(GridIndex *)gridIndex
 {
     int page = gridIndex.page;
-    int cellColoumn = gridIndex.column % columns;
+    int cellColoumn = gridIndex.column % _columns;
     int cellRow = gridIndex.row;
     
-    float x = (self.frame.size.width * page) + strtPos + (cellColoumn * gridcell.frame.size.width ) + (cellColoumn * colSpace);
-    float y = (cellRow * gridcell.frame.size.height ) + (cellRow * rowSpace) + topSpace;
+    float x = (self.frame.size.width * page) + _gridLeading + (cellColoumn * gridcell.frame.size.width ) + (cellColoumn * _columnSpace);
+    float y = (cellRow * gridcell.frame.size.height ) + (cellRow * _rowSpace) + _gridTop;
     
     return (CGRect){x, y, gridcell.frame.size};
 }
@@ -314,7 +299,7 @@ static NSInteger colSpace_Landscape = 43;
 {
     if(Page >= 0 && Page <= totalPage)
     {
-        for(int i= (Page * columns * rows); i < ((Page * columns * rows) + (columns*rows)); i++)
+        for(int i= (Page * _columns * _rows); i < ((Page * _columns * _rows) + (_columns * _rows)); i++)
         {
             STGridCell *deque = [self cellForIndex:i];
             [reusableGrids removeObjectForKey:@(i+1)];
@@ -330,17 +315,17 @@ static NSInteger colSpace_Landscape = 43;
  */
 -(void)resetCardsInPage:(int)page
 {
-    for(int i = (page * columns); i < (page*columns) + columns; i++) {
-        int index = (i >= columns) ?  ((page * rows * columns) + (i % columns)) : i;
+    for(int i = (page * _columns); i < (page * _columns) + _columns; i++) {
+        int index = (i >= _columns) ?  ((page * _rows * _columns) + (i % _columns)) : i;
         
-        for(int j= (i * rows); j < ((i * rows) + rows); j++) {
+        for(int j= (i * _rows); j < ((i * _rows) + _rows); j++) {
             STGridCell *grid = [self cellForIndex:index];
             if (grid) {
                 CGRect frame = [self getFrameForCell:grid atGridIndex:grid.gridIndex];
                 [UIView animateWithDuration:0.5 animations:^(void) {
                     grid.frame = frame;
                 }];
-                index += columns;
+                index += _columns;
             }
         }
     }
@@ -403,7 +388,7 @@ static NSInteger colSpace_Landscape = 43;
  */
 -(BOOL)isVisible:(int)index
 {
-    int page = (index / (columns * rows));
+    int page = (index / (_columns * _rows));
     return (page >= currentPage-2 && page <= currentPage+2);
 }
 
@@ -426,7 +411,7 @@ static NSInteger colSpace_Landscape = 43;
 
 -(void)moveGridsFromIndex:(int)index
 {
-    int EndIndex = (numberOfGrid < ( (currentPage + 2) * columns * rows) ) ? (numberOfGrid - 1) : ( ((currentPage + 2) * columns * rows) - 1 );
+    int EndIndex = (numberOfGrids < ( (currentPage + 2) * _columns * _rows) ) ? (numberOfGrids - 1) : ( ((currentPage + 2) * _columns * _rows) - 1 );
     for(int i = index; i < EndIndex; i++)
     {
         [self moveGridAtIndex:i toIndex:i+1];
@@ -651,10 +636,10 @@ static NSInteger colSpace_Landscape = 43;
  */
 -(GridIndex *)gridIndexForIndex:(int)index
 {
-    int page = (index / (columns * rows));
-    int pos = (index % (columns * rows));
-    int column = (page * columns) + (pos % columns);
-    int row = (pos / columns);
+    int page = (index / (_columns * _rows));
+    int pos = (index % (_columns * _rows));
+    int column = (page * _columns) + (pos % _columns);
+    int row = (pos / _columns);
     
     GridIndex *gridIndex = [[GridIndex alloc] initWithColumn:column andRow:row];
     gridIndex.index = index;
@@ -672,7 +657,7 @@ static NSInteger colSpace_Landscape = 43;
 {
     [self getFrames];
     
-    for(int i=index; i < numberOfGrid; i++)
+    for(int i=index; i < numberOfGrids; i++)
     {
         STGridCell *gridCell = (STGridCell *)[reusableGrids objectForKey:@(i+2)];
         
@@ -802,15 +787,15 @@ static NSInteger colSpace_Landscape = 43;
     int page = (scrollDirection == GridScrollDirectionRight) ? (currentPage + 1) : (currentPage - 1);
     
     if(page >= 0 && page <= toPage) {
-        int column = page * columns;
+        int column = page * _columns;
         
         if(scrollDirection == GridScrollDirectionRight) {
-            for(int i = column; i < (column + columns); i++) {
+            for(int i = column; i < (column + _columns); i++) {
                 [self animateGirdsInColumn:i shouldAnimate:state duration:delay];
                 delay += 0.2;
             }
         } else if(scrollDirection == GridScrollDirectionLeft) {
-            for(int i = (column + columns)-1 ; i >= column; i--) {
+            for(int i = (column + _columns)-1 ; i >= column; i--) {
                 [self animateGirdsInColumn:i shouldAnimate:state duration:delay];
                 delay += 0.2;
             }
@@ -820,9 +805,9 @@ static NSInteger colSpace_Landscape = 43;
 
 -(void)animateGirdsInColumn:(int)column shouldAnimate:(BOOL)animate duration:(float)duration
 {
-    int currentIndex = (column >= columns) ? (((column / columns) * rows * columns) + (column % columns)) : column;
+    int currentIndex = (column >= _columns) ? (((column / _columns) * _rows * _columns) + (column % _columns)) : column;
     
-    for(int j= (column * rows); j < ((column * rows) + rows); j++)
+    for(int j= (column * _rows); j < ((column * _rows) + _rows); j++)
     {
         if(currentIndex >= 0) {
             STGridCell *grid = [self cellForIndex:currentIndex];
@@ -855,7 +840,7 @@ static NSInteger colSpace_Landscape = 43;
                 }
             }
         }
-        currentIndex += columns;
+        currentIndex += _columns;
     }
 }
 // =======================================================================================================================================>>

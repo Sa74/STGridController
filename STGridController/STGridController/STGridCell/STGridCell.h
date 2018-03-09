@@ -24,9 +24,7 @@
 
 @interface STGridCell : UIView
 
-
 @property (retain, nonatomic) id <STGridCellDelegate> delegate;
-@property (retain, nonatomic) id data;
 @property (retain, nonatomic) UIImageView *backgroundImage;
 @property (retain, nonatomic) NSString *identifier;
 @property (retain, nonatomic) GridIndex *gridIndex;

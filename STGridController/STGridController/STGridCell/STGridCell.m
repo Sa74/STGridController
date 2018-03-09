@@ -31,7 +31,6 @@
 @synthesize delegate = _delegate;
 @synthesize identifier = _identifier;
 @synthesize gridIndex = _gridIndex;
-@synthesize data = _data;
 @synthesize backgroundImage = _backgroundImage;
 
 

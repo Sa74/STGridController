@@ -47,16 +47,10 @@ IB_DESIGNABLE
 @interface STGridView : UIScrollView <NSCoding, STGridCellDelegate, CAAnimationDelegate, UIScrollViewDelegate> {
     
 @private
-    int numberOfGrid;
-    int rows;
-    int columns;
+    int numberOfGrids;
     double totalPage;
     int fromPage;
     int toPage;
-    int strtPos;
-    int rowSpace;
-    int colSpace;
-    int topSpace;
     int currentPage;
     
     STGridCell *cell;
@@ -67,19 +61,24 @@ IB_DESIGNABLE
     NSMutableDictionary *reusableGrids;
 }
 
+/*
+ Properties with IBInspection option to customize default grid layout..
+ */
+@property (nonatomic) IBInspectable float rowSpace;
+@property (nonatomic) IBInspectable float columnSpace;
+@property (nonatomic) IBInspectable float gridLeading;
+@property (nonatomic) IBInspectable float gridTop;
+@property (nonatomic) IBInspectable float gridWidth;
+@property (nonatomic) IBInspectable float gridHeight;
 
 @property (nonatomic, weak) id <GridDataSource> dataSource;
 @property (nonatomic, weak) id <GridDelegate> gridDelegate;
 
+/*
+ STPageIndicator proeprty with IBOutlet connection used for page number indication
+ */
 @property (nonatomic, weak) IBOutlet STPageIndicator *pageIndicator;
 
-/*
- metods to customize existing grid layout..
- */
--(void)setNumberOfColumns:(int)_columns;
--(void)setNumberOfRows:(int)_rows;
--(void)setRowSpace:(int)_rowspace;
--(void)setColumnSpace:(int)_columnspace;
 
 /*
  Methods to init and handle grid controller frame deletage and datasources...
@@ -94,21 +93,6 @@ IB_DESIGNABLE
 -(void)dequeScrollCellAtPage:(int)Page;
 -(CGRect)getFrameForCell:(STGridCell *)gridcell atGridIndex:(GridIndex *)gridIndex;
 
-@end
-
-
-/*
- Data source for Grid controller developed from Table View Controller Protocol..
- */
-@protocol GridDataSource <NSObject>
-
-@required
-
--(NSInteger)numberOfGrids;
--(STGridCell *)gridView:(STGridView *)gridView cellForIndex:(int)index;
-
-@optional
-
 -(void)moveGridsAtIndexes:(NSMutableArray *)indexes toIndexes:(NSMutableArray *)moveIndexes;
 -(void)moveGridAtIndex:(int)index toIndex:(int)moveIndex;
 
@@ -119,6 +103,18 @@ IB_DESIGNABLE
 
 -(void)insertGridsAtIndexes:(NSMutableArray *)indexes;
 -(void)insertGridAtIndex:(int)index;
+
+@end
+
+
+/*
+ Data source for Grid controller developed from Table View Controller Protocol..
+ */
+@protocol GridDataSource <NSObject>
+
+@required
+-(NSInteger)numberOfGrids;
+-(STGridCell *)gridView:(STGridView *)gridView cellForIndex:(int)index;
 
 @end
 
