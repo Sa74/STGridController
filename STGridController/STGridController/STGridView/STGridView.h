@@ -91,7 +91,7 @@ IB_DESIGNABLE
 
 -(void)loadGridsForPage:(int)Page;
 -(void)dequeScrollCellAtPage:(int)Page;
--(CGRect)getFrameForCell:(STGridCell *)gridcell atGridIndex:(GridIndex *)gridIndex;
+-(CGRect)getFrameForCellAtGridIndex:(GridIndex *)gridIndex;
 
 -(void)moveGridsAtIndexes:(NSMutableArray *)indexes toIndexes:(NSMutableArray *)moveIndexes;
 -(void)moveGridAtIndex:(int)index toIndex:(int)moveIndex;

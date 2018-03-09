@@ -63,15 +63,37 @@
                             <view clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="XaJ-x0-q34" customClass="STGridCell">
                                 <rect key="frame" x="319" y="482" width="195" height="147"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="c7k-GJ-xDr">
+                                        <rect key="frame" x="76" y="63" width="42" height="21"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
                                 <color key="backgroundColor" red="0.0" green="0.4793452024" blue="0.99908632040000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oq4-mI-V9B">
+                                <rect key="frame" x="20" y="49" width="75" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="40" id="fAi-FJ-OiR"/>
+                                    <constraint firstAttribute="width" constant="75" id="vzL-tD-c19"/>
+                                </constraints>
+                                <state key="normal" title="Filter"/>
+                                <connections>
+                                    <action selector="filterGrids:" destination="BYZ-38-t0r" eventType="touchUpInside" id="bEF-hU-cYM"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="TLX-7O-K4J" firstAttribute="centerX" secondItem="bYB-sd-XNY" secondAttribute="centerX" id="9EL-1i-PiE"/>
+                            <constraint firstItem="oq4-mI-V9B" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="AuY-vt-K1L"/>
                             <constraint firstItem="bYB-sd-XNY" firstAttribute="width" secondItem="8bC-Xf-vdC" secondAttribute="width" id="JEp-IZ-azN"/>
                             <constraint firstItem="bYB-sd-XNY" firstAttribute="height" secondItem="8bC-Xf-vdC" secondAttribute="height" multiplier="0.77" id="QC6-Ro-odQ"/>
                             <constraint firstItem="bYB-sd-XNY" firstAttribute="centerY" secondItem="6Tk-OE-BBY" secondAttribute="centerY" id="Ucu-Wh-fvz"/>
+                            <constraint firstItem="oq4-mI-V9B" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="29" id="enW-9a-in7"/>
                             <constraint firstItem="TLX-7O-K4J" firstAttribute="top" secondItem="bYB-sd-XNY" secondAttribute="bottom" constant="-35" id="hKg-jS-Dnf"/>
                             <constraint firstItem="bYB-sd-XNY" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="hyK-HL-VXv"/>
                         </constraints>
