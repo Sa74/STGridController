@@ -46,12 +46,12 @@
 }
 
 - (IBAction)insertGrids:(id)sender {
-    NSMutableArray *indexes = [NSMutableArray arrayWithObjects:@1, @5, @8, @9, nil];
+    NSMutableArray *indexes = [NSMutableArray arrayWithObjects:@1, @5, @8, @10, nil];
     for (NSNumber *number in indexes) {
         [self.dataArray insertObject:@"dataIn" atIndex:number.integerValue];
     }
-//        [self.dataArray insertObject:@"data" atIndex:1];
-//        [self.gridView insertGridAtIndex:1];
+//    [self.dataArray insertObject:@"data" atIndex:1];
+//    [self.gridView insertGridAtIndex:1];
     [self.gridView insertGridsAtIndexes:indexes];
 }
 
@@ -81,8 +81,7 @@
 /*
  Method to update grid controller frame based on Orientation change...
  */
--(void)reloadData
-{
+-(void)reloadData {
     [self.gridView reloadData];
 }
 

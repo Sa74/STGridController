@@ -89,15 +89,12 @@ IB_DESIGNABLE
 -(void)loadData;
 
 -(STGridCell *)gridForIndex:(int)index;
--(STGridCell *) dequeuCellWithIdentifier:(NSString *)identifier atIndex:(int)index;
+-(STGridCell *)dequeuCellWithIdentifier:(NSString *)identifier atIndex:(int)index;
 -(CGRect)getFrameForCellAtGridIndex:(GridIndex *)gridIndex;
 -(NSMutableArray *)getAllGrids;
 
 -(void)loadGridsForPage:(int)Page;
 -(void)dequeScrollCellAtPage:(int)Page;
-
--(void)moveGridsAtIndexes:(NSMutableArray *)indexes toIndexes:(NSMutableArray *)moveIndexes;
--(void)moveGridAtIndex:(int)index toIndex:(int)moveIndex;
 
 -(void)removeGridsAtIndexes:(NSMutableArray *)removeIndexes;
 -(void)removeGridAtIndex:(int)index;

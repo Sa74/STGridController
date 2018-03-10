@@ -134,7 +134,7 @@ static const float gridHeight = 147.0f;
     
     if(totalPage > 1) {
         self.pageIndicator.hidden = NO;
-        [self refreshPageIncrementor];
+        [self loadPageIndicator];
     } else {
         self.pageIndicator.hidden = YES;
     }
@@ -259,18 +259,25 @@ static const float gridHeight = 147.0f;
 #pragma mark - page indicator update methods
 // =======================================================================================================================================>>
 /*
- To update the page bar based on scroller movement...
+ Page indicator initial layout method
  */
--(void)refreshPageIncrementor {
+- (void) loadPageIndicator {
     if (!self.pageIndicator) {
         return;
     }
-    [self.pageIndicator setAlpha:0.0f];    
+    [self.pageIndicator setAlpha:0.0f];
     [UIView animateWithDuration:0.5 animations:^(void) {
         self.pageIndicator.alpha = 1.0f;
     } completion:^(BOOL finished) {
-        [self.pageIndicator movetoPage:currentPage+1 inTotalPage:totalPage];
+        [self refreshPageIncrementor];
     }];
+}
+
+/*
+ To update the page bar based on scroller movement...
+ */
+-(void)refreshPageIncrementor {
+    [self.pageIndicator movetoPage:currentPage+1 inTotalPage:totalPage];
 }
 
 
@@ -383,46 +390,47 @@ static const float gridHeight = 147.0f;
  Cards will be animated based on cards visiblity by calculting the cards frame and Scroller content offset...
  Remaing cards will be replaced simply without animation in Background...
  */
--(void)insertGridsAtIndexes:(NSMutableArray *)indexes
-{
+-(void)insertGridsAtIndexes:(NSMutableArray *)indexes {
+    [indexes sortUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"self" ascending:NO]]];
     [self getFrames];
-    for(int i=0; i < [indexes count]; i++)
-    {
-        if([self isVisible:[indexes[i] intValue]])
-        {
-            int index = [indexes[i] intValue];
-            [self createGridAtIndex:index alpha:0];
-            STGridCell *gridcell = [self gridForIndex:index];
-            [reusableGrids setObject:gridcell forKey:@(0)];
-            [self showGrid:gridcell AfterCompleted:^(void) {
-                [reusableGrids setObject:gridcell forKey:@(gridcell.gridIndex.index+1)];
-                [reusableGrids removeObjectForKey:@(0)];
-             }];
-        }
+    
+    int position = (int)indexes.count;
+    int previousIndex = numberOfGrids - 1;
+    for (NSNumber *index in indexes) {
+        int range = previousIndex - index.intValue;
+        [self moveGridsAtIndexRange:NSMakeRange(index.intValue, range) toPosition:position
+                      exceptIndexes:[indexes subarrayWithRange:NSMakeRange(0, [indexes indexOfObject:index])]];
+        [self insertGrid:index.intValue];
+        previousIndex = index.intValue;
+        position--;
     }
+    
     fromPage = currentPage - 2;
     toPage = currentPage + 2;
+    [self refreshPageIncrementor];
 }
 
--(void)insertGridAtIndex:(int)index
-{
+-(void)insertGridAtIndex:(int)index {
     [self getFrames];
     [self moveGridsFromIndex:index];
-    if([self isVisible:index])
-    {
+    [self insertGrid:index];
+}
+
+- (void) insertGrid:(int)index {
+    if([self isVisible:index]) {
+        [reusableGrids removeObjectForKey:@(index+1)];
         [self createGridAtIndex:index alpha:0];
         STGridCell *gridcell = [self gridForIndex:index];
         [self showGrid:gridcell AfterCompleted:^(void) {
             [reusableGrids setObject:gridcell forKey:@(index+1)];
-         }];
+        }];
     }
 }
 
 /*
  To icheck cards visiblity based on cards frame and scrolers currentPage...
  */
--(BOOL)isVisible:(int)index
-{
+-(BOOL)isVisible:(int)index {
     int page = (index / (_columns * _rows));
     return (page >= currentPage-2 && page <= currentPage+2);
 }
@@ -431,15 +439,14 @@ static const float gridHeight = 147.0f;
  Grow animation from existing card...
  After animation completion block will be executed.. Wchich can be used to set tag and datasource to card...
  */
--(void)showGrid:(STGridCell *)grid AfterCompleted:(void (^)(void))completion
-{
-    [UIView animateWithDuration:0.2 animations:^(void) {
+-(void)showGrid:(STGridCell *)grid AfterCompleted:(void (^)(void))completion {
+    
+    [UIView animateWithDuration:0.4 animations:^(void) {
         grid.alpha = 1.0f;
     }];
     
     [CATransaction begin];
-    [CATransaction setCompletionBlock:^(void)
-     {
+    [CATransaction setCompletionBlock:^(void) {
          if(completion)
              completion();
      }];
@@ -447,7 +454,7 @@ static const float gridHeight = 147.0f;
     CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
     [animation setToValue:[NSNumber numberWithDouble:1.0]];
     [animation setFromValue:[NSNumber numberWithDouble:0.0]];
-    [animation setDuration:0.3];
+    [animation setDuration:0.5];
     animation.delegate = self;
     
     [grid.layer addAnimation:animation forKey:@"Show Grid"];
@@ -464,46 +471,57 @@ static const float gridHeight = 147.0f;
  existing card deletion...
  Similar to insertion visible cards will be animated where as remaining cards will be replaced in background..
  */
--(void)moveGridsAtIndexes:(NSMutableArray *)indexes toIndexes:(NSMutableArray *)moveIndexes
-{
+-(void)moveGridsAtIndexRange:(NSRange)indexRage toPosition:(int)position exceptIndexes:(NSArray *)exceptIndexes {
+    
     [self getFrames];
-    for(int i = 0; i < [indexes count]; i++) {
-        [self moveGridAtIndex:[[indexes objectAtIndex:i] intValue] toIndex:[[moveIndexes objectAtIndex:i] intValue]];
+    
+    int fromIndex = (int)(indexRage.location + indexRage.length);
+    int startIndex = (int)indexRage.location;
+    int skippedIndex = -1;
+    
+    for (int i = fromIndex; i >= startIndex ; i--) {
+        if ([exceptIndexes containsObject:@(i)]) {
+            skippedIndex = i;
+        } else {
+            int moveIndex = i + position;
+            if (skippedIndex == moveIndex) {
+                moveIndex++;
+            }
+            [self moveGridAtIndex:i toIndex:moveIndex];
+        }
     }
 }
 
 -(void)moveGridsFromIndex:(int)index {
     int endIndex = (numberOfGrids < ( (currentPage + 2) * _columns * _rows) ) ? (numberOfGrids - 1) : ( ((currentPage + 2) * _columns * _rows) - 1 );
-    for(int i = index; i < endIndex; i++) {
+    for(int i = endIndex; i >= index; i--) {
         [self moveGridAtIndex:i toIndex:i+1];
     }
 }
 
--(void)moveGridAtIndex:(int)index toIndex:(int)moveIndex {
-    STGridCell *grid = (STGridCell *)[reusableGrids objectForKey:@(index+1)];
+-(void)moveGridAtIndex:(int)fromIndex toIndex:(int)moveIndex {
     
-    if(!grid && [self isVisible:moveIndex]) {
-        [self createGridAtIndex:moveIndex];
-        grid = [self gridForIndex:moveIndex];
-        if(grid.gridIndex.page == currentPage) {
-            CGRect frame = grid.frame;
-            grid.frame = (CGRect){frame.origin.x + self.frame.size.width, frame.origin.y, frame.size};
-        }
-    }
-    
-    if(grid) {
-        GridIndex *newGridIndex = [self gridIndexForIndex:moveIndex];
-        if(grid.gridIndex.page == currentPage || newGridIndex.page == currentPage) {
-            [grid setGridIndex:newGridIndex];
-            [self moveGrid:grid AfterCompleted:^(void) {
+    if ([self isVisible:fromIndex] ||
+        [self isVisible:moveIndex]) {
+        
+        STGridCell *grid = [self gridForIndex:fromIndex];
+        
+        if(!grid) {
+            [self createGridAtIndex:moveIndex];
+        } else {
+            int gridPage = grid.gridIndex.page;
+            GridIndex *moveGridIndex = [self gridIndexForIndex:moveIndex];
+            grid.gridIndex = moveGridIndex;
+            if(gridPage == currentPage || moveGridIndex.page == currentPage) {
+                [self moveGrid:grid AfterCompleted:^(void) {
+                    [reusableGrids setObject:grid forKey:@(moveIndex+1)];
+                    [self bringSubviewToFront:grid];
+                }];
+            } else {
+                grid.frame = [self getFrameForCellAtGridIndex:moveGridIndex];
                 [reusableGrids setObject:grid forKey:@(moveIndex+1)];
                 [self bringSubviewToFront:grid];
-             }];
-        } else {
-            [grid setGridIndex:newGridIndex];
-            [grid setFrame:[self getFrameForCellAtGridIndex:newGridIndex]];
-            [reusableGrids setObject:grid forKey:@(moveIndex+1)];
-            [self bringSubviewToFront:grid];
+            }
         }
     }
 }
@@ -511,15 +529,14 @@ static const float gridHeight = 147.0f;
 /*
  Move animation for existing card to new position...
  */
--(void)moveGrid:(STGridCell *)grid AfterCompleted:(void (^)(void))completion
-{
+-(void)moveGrid:(STGridCell *)grid AfterCompleted:(void (^)(void))completion {
+    
     CGRect frame = [self getFrameForCellAtGridIndex:grid.gridIndex];
     
     [UIView animateWithDuration:0.6 animations:^(void) {
         grid.alpha = 1.0f;
-        grid.frame = (grid.gridIndex.page == currentPage) ? frame : (CGRect){grid.frame.origin.x + self.frame.size.width, frame.origin.y, frame.size};
-    }  completion:^(BOOL finished) {
         grid.frame = frame;
+    }  completion:^(BOOL finished) {
         if(completion)
             completion();
     }];
@@ -587,8 +604,7 @@ static const float gridHeight = 147.0f;
     [self reloadData];
 }
 
--(void)removeGridAtIndex:(int)index
-{
+-(void)removeGridAtIndex:(int)index {
     STGridCell *gridCell = (STGridCell *)[reusableGrids objectForKey:@(index+1)];
     [self removeGrid:gridCell];
 }
@@ -701,7 +717,7 @@ static const float gridHeight = 147.0f;
     CGFloat pageWidth = scrollView.frame.size.width;
     currentPage = floor((scrollView.contentOffset.x - pageWidth / 2) / pageWidth) + 1;
     scrollBeginOffset = scrollView.contentOffset.x;
-    [self.pageIndicator movetoPage:currentPage+1 inTotalPage:totalPage];
+    [self refreshPageIncrementor];
     scrollDirection = GridScrollDirectionRight;
     [self scrollAnimationForGridsForState:NO];
     scrollDirection = GridScrollDirectionLeft;
@@ -750,7 +766,7 @@ static const float gridHeight = 147.0f;
     
     CGFloat pageWidth = scrollView.frame.size.width;
     currentPage = floor((scrollView.contentOffset.x - pageWidth / 2) / pageWidth) + 1;
-    [self.pageIndicator movetoPage:currentPage+1 inTotalPage:totalPage];
+    [self refreshPageIncrementor];
 }
 
 
@@ -772,7 +788,7 @@ static const float gridHeight = 147.0f;
      */
     CGFloat pageWidth = scrollView.frame.size.width;
     currentPage = floor((scrollView.contentOffset.x - pageWidth / 2) / pageWidth) + 1;
-    [self.pageIndicator movetoPage:currentPage+1 inTotalPage:totalPage];
+    [self refreshPageIncrementor];
 }
 // =======================================================================================================================================>>
 
