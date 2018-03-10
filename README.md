@@ -2,7 +2,10 @@
 Custom Grid Controller with scroll animation, page indicator and smart search with card animations
 
 # Screenshot
+Smooth scrolling with card fall animation
 ![STGridController](https://github.com/Sa74/STGridController/blob/master/STGridController/STGridController/gridScroll.gif)
+
+Simple insertion and deletion on data grids
 ![STGridController](https://github.com/Sa74/STGridController/blob/master/STGridController/STGridController/insertAndDelete.gif)
 
 # Author
