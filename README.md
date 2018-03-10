@@ -2,8 +2,8 @@
 Custom Grid Controller with scroll animation, page indicator and smart search with card animations
 
 # Screenshot
-![STGridController](https://github.com/Sa74/STGridController/blob/master/STGridController/STGridController/insertAndDelete.gif)
 ![STGridController](https://github.com/Sa74/STGridController/blob/master/STGridController/STGridController/gridScroll.gif)
+![STGridController](https://github.com/Sa74/STGridController/blob/master/STGridController/STGridController/insertAndDelete.gif)
 
 # Author
 [Sasi Moorthy](https://twitter.com/Sasi3726). Looking out for freelance work, if interested feel free to contact me.
