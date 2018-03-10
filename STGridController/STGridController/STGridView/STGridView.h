@@ -53,11 +53,11 @@ IB_DESIGNABLE
     int toPage;
     int currentPage;
     
-    STGridCell *cell;
     GridScrollDirection scrollDirection;
     
     float scrollBeginOffset;
     CGSize priorLayoutSize;
+    NSMutableDictionary *dequeueGrids;
     NSMutableDictionary *reusableGrids;
 }
 
@@ -71,6 +71,7 @@ IB_DESIGNABLE
 @property (nonatomic) IBInspectable float gridWidth;
 @property (nonatomic) IBInspectable float gridHeight;
 
+@property (nonatomic, weak) IBOutlet UIView *contentView;
 @property (nonatomic, weak) id <GridDataSource> dataSource;
 @property (nonatomic, weak) id <GridDelegate> gridDelegate;
 
@@ -86,12 +87,14 @@ IB_DESIGNABLE
 -(id)initWithFrame:(CGRect)frame withDelegate:(id)gridDelegate AndDatasource:(id)gridDatasource;
 -(void)reloadData;
 -(void)loadData;
+
+-(STGridCell *)gridForIndex:(int)index;
+-(STGridCell *) dequeuCellWithIdentifier:(NSString *)identifier atIndex:(int)index;
+-(CGRect)getFrameForCellAtGridIndex:(GridIndex *)gridIndex;
 -(NSMutableArray *)getAllGrids;
--(STGridCell *)cellForIndex:(int)index;
 
 -(void)loadGridsForPage:(int)Page;
 -(void)dequeScrollCellAtPage:(int)Page;
--(CGRect)getFrameForCellAtGridIndex:(GridIndex *)gridIndex;
 
 -(void)moveGridsAtIndexes:(NSMutableArray *)indexes toIndexes:(NSMutableArray *)moveIndexes;
 -(void)moveGridAtIndex:(int)index toIndex:(int)moveIndex;

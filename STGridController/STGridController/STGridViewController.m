@@ -21,8 +21,7 @@
     return 0; // Override as required
 }
 
--(STGridCell *)gridView:(STGridView *)gridView cellForIndex:(int)index
-{
+-(STGridCell *)gridView:(STGridView *)gridView cellForIndex:(int)index {
     return nil; // Override as required
 }
 

@@ -53,7 +53,6 @@ static const float gridHeight = 147.0f;
         self.gridDelegate = gridDelegate;
         self.dataSource = gridDatasource;
         self.frame = frame;
-        reusableGrids = [NSMutableDictionary dictionary];
     }
     return self;
 }
@@ -99,7 +98,7 @@ static const float gridHeight = 147.0f;
 /*
  To return card at specific index...
  */
--(STGridCell *)cellForIndex:(int)index {
+-(STGridCell *)gridForIndex:(int)index {
     return (STGridCell *)[reusableGrids objectForKey:@(index+1)];
 }
 
@@ -122,10 +121,6 @@ static const float gridHeight = 147.0f;
         x += _gridWidth;
         x += _columnSpace;
         _columns++;
-    }
-    
-    if (!reusableGrids) {
-        reusableGrids = [NSMutableDictionary dictionary];
     }
     
     numberOfGrids = (int)[self.dataSource numberOfGrids];
@@ -154,17 +149,8 @@ static const float gridHeight = 147.0f;
  */
 -(void)loadData {
     
-    if (!reusableGrids) {
-        reusableGrids = [NSMutableDictionary dictionary];
-    }
-    
     self.backgroundColor = [UIColor grayColor];
     [self getFrames];
-    
-    cell = [self.dataSource gridView:self cellForIndex:0];
-    if(!cell) {
-        cell = [[STGridCell alloc] init];
-    }
     
     currentPage = 0;
     [self loadGrid];
@@ -195,20 +181,79 @@ static const float gridHeight = 147.0f;
         for(int i= (Page * _columns * _rows); i < ((Page * _columns * _rows) + (_columns * _rows)); i++)
         {
             if(i < numberOfGrids && i >=0) {
-                STGridCell *gridCell = [self cellForIndex:i];
-                gridCell.alpha = 1.0f;
-                if(!gridCell) {
-                    [self createGridAtIndex:i];
-                } else {
-                    gridCell = [self.dataSource gridView:self cellForIndex:i];
-                    gridCell.gridIndex = [self gridIndexForIndex:i];
-                    gridCell.frame = [self getFrameForCellAtGridIndex:gridCell.gridIndex];
-                    [reusableGrids setObject:gridCell forKey:@(i+1)];
-                }
+                [self createGridAtIndex:i];
             }
         }
     }
 }
+
+#pragma mark - GridCell creation and data source execution methods
+// =======================================================================================================================================>>
+/*
+ To get New card for each index from Grid Controller Data Source..
+ */
+- (STGridCell *) dequeuCellWithIdentifier:(NSString *)identifier atIndex:(int)index {
+    STGridCell *grid = [self gridForIndex:index];
+    if (!grid || grid.identifier != identifier) {
+        grid = (STGridCell *)[NSKeyedUnarchiver unarchiveObjectWithData:[dequeueGrids valueForKey:identifier]];
+    }
+    return grid;
+}
+
+-(void)createGridAtIndex:(int)index {
+    [self createGridAtIndex:index alpha:1.0f];
+}
+
+-(void)createGridAtIndex:(int)index alpha:(CGFloat)alpha
+{
+    STGridCell *grid = [self.dataSource gridView:self cellForIndex:index];
+    if (!grid) {
+        [NSException raise:@"Invalid Gird object for index" format:@"Grid of index %d is invalid", index];
+    }
+    grid.alpha = alpha;
+    grid.gridIndex = [self gridIndexForIndex:index];
+    grid.frame = [self getFrameForCellAtGridIndex:grid.gridIndex];
+    grid.delegate = self;
+    [grid addTapgesture];
+    [self addSubview:grid];
+    [self bringSubviewToFront:grid];
+    [reusableGrids setObject:grid forKey:@(index+1)];
+}
+
+#pragma mark - GridCell grid Index creation and frame/page calculation methods
+// =======================================================================================================================================>>
+/*
+ To set new grid index for each card based on card index... Which will set frame and page for all grid...
+ */
+-(GridIndex *)gridIndexForIndex:(int)index
+{
+    int page = (index / (_columns * _rows));
+    int pos = (index % (_columns * _rows));
+    int column = (page * _columns) + (pos % _columns);
+    int row = (pos / _columns);
+    
+    GridIndex *gridIndex = [[GridIndex alloc] initWithColumn:column andRow:row];
+    gridIndex.index = index;
+    gridIndex.page = page;
+    return gridIndex;
+}
+
+/*
+ To get grids frame based on orientation change and page movement...
+ Which will be calculated based on gridIndex...
+ */
+-(CGRect)getFrameForCellAtGridIndex:(GridIndex *)gridIndex
+{
+    int page = gridIndex.page;
+    int cellColoumn = gridIndex.column % _columns;
+    int cellRow = gridIndex.row;
+    
+    float x = (self.frame.size.width * page) + _gridLeading + (cellColoumn * _gridWidth ) + (cellColoumn * _columnSpace);
+    float y = (cellRow * _gridHeight ) + (cellRow * _rowSpace) + _gridTop;
+    
+    return (CGRect){x, y, _gridWidth, _gridHeight};
+}
+
 
 
 #pragma mark - page indicator update methods
@@ -262,24 +307,6 @@ static const float gridHeight = 147.0f;
 
 
 
-/*
- To get grids frame based on orientation change and page movement...
- Which will be calculated based on gridIndex...
- */
--(CGRect)getFrameForCellAtGridIndex:(GridIndex *)gridIndex
-{
-    int page = gridIndex.page;
-    int cellColoumn = gridIndex.column % _columns;
-    int cellRow = gridIndex.row;
-    
-    float x = (self.frame.size.width * page) + _gridLeading + (cellColoumn * _gridWidth ) + (cellColoumn * _columnSpace);
-    float y = (cellRow * _gridHeight ) + (cellRow * _rowSpace) + _gridTop;
-    
-    return (CGRect){x, y, _gridWidth, _gridHeight};
-}
-
-
-
 
 #pragma mark - GridCell delegate method and GridView delegate execution
 // =======================================================================================================================================>>
@@ -303,11 +330,8 @@ static const float gridHeight = 147.0f;
     {
         for(int i= (Page * _columns * _rows); i < ((Page * _columns * _rows) + (_columns * _rows)); i++)
         {
-            STGridCell *deque = [self cellForIndex:i];
-            [reusableGrids removeObjectForKey:@(i+1)];
-            [deque removeFromSuperview];
-            deque.gridIndex = nil;
-            deque = nil;
+            STGridCell *deque = [self gridForIndex:i];
+            [self deallocCell:deque];
         }
     }
 }
@@ -321,7 +345,7 @@ static const float gridHeight = 147.0f;
         int index = (i >= _columns) ?  ((page * _rows * _columns) + (i % _columns)) : i;
         
         for(int j= (i * _rows); j < ((i * _rows) + _rows); j++) {
-            STGridCell *grid = [self cellForIndex:index];
+            STGridCell *grid = [self gridForIndex:index];
             grid.alpha = 1.0f;
             if (grid) {
                 CGRect frame = [self getFrameForCellAtGridIndex:grid.gridIndex];
@@ -333,8 +357,6 @@ static const float gridHeight = 147.0f;
         }
     }
 }
-
-
 
 /*
  To dealloc grid and release grid memory...
@@ -348,11 +370,12 @@ static const float gridHeight = 147.0f;
         [reusableGrids removeObjectForKey:@(gridCell.gridIndex.index+1)];
     }
     [gridCell removeFromSuperview];
+    gridCell.gridIndex = nil;
     gridCell = nil;
 }
 
 
-#pragma Grid Controller Data Source...
+#pragma mark - Grid cell data manipulation and cell update methods
 // =======================================================================================================================================>>
 /*
  To insert new girds...
@@ -367,7 +390,9 @@ static const float gridHeight = 147.0f;
     {
         if([self isVisible:[indexes[i] intValue]])
         {
-            STGridCell *gridcell = [self createGridAtIndex:[indexes[i] intValue] alpha:0];
+            int index = [indexes[i] intValue];
+            [self createGridAtIndex:index alpha:0];
+            STGridCell *gridcell = [self gridForIndex:index];
             [reusableGrids setObject:gridcell forKey:@(0)];
             [self showGrid:gridcell AfterCompleted:^(void) {
                 [reusableGrids setObject:gridcell forKey:@(gridcell.gridIndex.index+1)];
@@ -385,7 +410,8 @@ static const float gridHeight = 147.0f;
     [self moveGridsFromIndex:index];
     if([self isVisible:index])
     {
-        STGridCell *gridcell = [self createGridAtIndex:index alpha:0];
+        [self createGridAtIndex:index alpha:0];
+        STGridCell *gridcell = [self gridForIndex:index];
         [self showGrid:gridcell AfterCompleted:^(void) {
             [reusableGrids setObject:gridcell forKey:@(index+1)];
          }];
@@ -401,6 +427,35 @@ static const float gridHeight = 147.0f;
     return (page >= currentPage-2 && page <= currentPage+2);
 }
 
+/*
+ Grow animation from existing card...
+ After animation completion block will be executed.. Wchich can be used to set tag and datasource to card...
+ */
+-(void)showGrid:(STGridCell *)grid AfterCompleted:(void (^)(void))completion
+{
+    [UIView animateWithDuration:0.2 animations:^(void) {
+        grid.alpha = 1.0f;
+    }];
+    
+    [CATransaction begin];
+    [CATransaction setCompletionBlock:^(void)
+     {
+         if(completion)
+             completion();
+     }];
+    
+    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+    [animation setToValue:[NSNumber numberWithDouble:1.0]];
+    [animation setFromValue:[NSNumber numberWithDouble:0.0]];
+    [animation setDuration:0.3];
+    animation.delegate = self;
+    
+    [grid.layer addAnimation:animation forKey:@"Show Grid"];
+    
+    [CATransaction commit];
+}
+
+
 
 #pragma mark - GridView search implementation and card layout update methods
 // =======================================================================================================================================>>
@@ -412,47 +467,39 @@ static const float gridHeight = 147.0f;
 -(void)moveGridsAtIndexes:(NSMutableArray *)indexes toIndexes:(NSMutableArray *)moveIndexes
 {
     [self getFrames];
-    for(int i = 0; i < [indexes count]; i++)
-    {
+    for(int i = 0; i < [indexes count]; i++) {
         [self moveGridAtIndex:[[indexes objectAtIndex:i] intValue] toIndex:[[moveIndexes objectAtIndex:i] intValue]];
     }
 }
 
--(void)moveGridsFromIndex:(int)index
-{
+-(void)moveGridsFromIndex:(int)index {
     int endIndex = (numberOfGrids < ( (currentPage + 2) * _columns * _rows) ) ? (numberOfGrids - 1) : ( ((currentPage + 2) * _columns * _rows) - 1 );
-    for(int i = index; i < endIndex; i++)
-    {
+    for(int i = index; i < endIndex; i++) {
         [self moveGridAtIndex:i toIndex:i+1];
     }
 }
 
--(void)moveGridAtIndex:(int)index toIndex:(int)moveIndex
-{
+-(void)moveGridAtIndex:(int)index toIndex:(int)moveIndex {
     STGridCell *grid = (STGridCell *)[reusableGrids objectForKey:@(index+1)];
     
-    if(!grid && [self isVisible:moveIndex])
-    {
-        grid = [self createGridAtIndex:moveIndex];
+    if(!grid && [self isVisible:moveIndex]) {
+        [self createGridAtIndex:moveIndex];
+        grid = [self gridForIndex:moveIndex];
         if(grid.gridIndex.page == currentPage) {
             CGRect frame = grid.frame;
             grid.frame = (CGRect){frame.origin.x + self.frame.size.width, frame.origin.y, frame.size};
         }
     }
     
-    if(grid)
-    {
+    if(grid) {
         GridIndex *newGridIndex = [self gridIndexForIndex:moveIndex];
-        if(grid.gridIndex.page == currentPage || newGridIndex.page == currentPage)
-        {
+        if(grid.gridIndex.page == currentPage || newGridIndex.page == currentPage) {
             [grid setGridIndex:newGridIndex];
             [self moveGrid:grid AfterCompleted:^(void) {
                 [reusableGrids setObject:grid forKey:@(moveIndex+1)];
                 [self bringSubviewToFront:grid];
              }];
-        }
-        else
-        {
+        } else {
             [grid setGridIndex:newGridIndex];
             [grid setFrame:[self getFrameForCellAtGridIndex:newGridIndex]];
             [reusableGrids setObject:grid forKey:@(moveIndex+1)];
@@ -461,31 +508,22 @@ static const float gridHeight = 147.0f;
     }
 }
 
-
-
-#pragma mark - GridCell creation and data source execution methods
-// =======================================================================================================================================>>
 /*
- To get New card for each index from Grid Controller Data Source..
+ Move animation for existing card to new position...
  */
--(STGridCell *)createGridAtIndex:(int)index {
-    return [self createGridAtIndex:index alpha:1.0f];
-}
-
--(STGridCell *)createGridAtIndex:(int)index alpha:(CGFloat)alpha
+-(void)moveGrid:(STGridCell *)grid AfterCompleted:(void (^)(void))completion
 {
-    STGridCell *grid = [self.dataSource gridView:self cellForIndex:index];
-    grid.gridIndex = [self gridIndexForIndex:index];
-    grid.frame = [self getFrameForCellAtGridIndex:grid.gridIndex];
-    grid.alpha = alpha;
-    grid.delegate = self;
-    [grid addTapgesture];
-    [self addSubview:grid];
-    [self bringSubviewToFront:grid];
-    [reusableGrids setObject:grid forKey:@(index+1)];
-    return grid;
+    CGRect frame = [self getFrameForCellAtGridIndex:grid.gridIndex];
+    
+    [UIView animateWithDuration:0.6 animations:^(void) {
+        grid.alpha = 1.0f;
+        grid.frame = (grid.gridIndex.page == currentPage) ? frame : (CGRect){grid.frame.origin.x + self.frame.size.width, frame.origin.y, frame.size};
+    }  completion:^(BOOL finished) {
+        grid.frame = frame;
+        if(completion)
+            completion();
+    }];
 }
-
 
 
 #pragma mark - GridCell delete and remove methods
@@ -518,24 +556,34 @@ static const float gridHeight = 147.0f;
     NSMutableArray *reusableKeys = [reusableGrids.allKeys mutableCopy];
     [reusableKeys sortUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"self" ascending:YES]]];
     
-    int i=0;
-    for (NSNumber *index in reusableKeys) {
-        if (index.integerValue >= [indexes.firstObject integerValue]+1) {
-            STGridCell *gridCell = (STGridCell *)[reusableGrids objectForKey:reusableKeys[i]];
-            GridIndex *gridIndex = [self gridIndexForIndex:i];
-            if (gridIndex.page == currentPage ||
-                gridCell.gridIndex.page == currentPage) {
-                [UIView animateWithDuration:0.5 animations:^{
-                    gridCell.frame = [self getFrameForCellAtGridIndex:gridIndex];
-                }];
-            } else {
-                gridCell.frame = [self getFrameForCellAtGridIndex:gridIndex];
-            }
-            [reusableGrids setObject:gridCell forKey:@(i+1)];
-            [self.dataSource gridView:self cellForIndex:i];
-        }
-        i++;
+    int fromIndex = [indexes.firstObject intValue] - 1;
+    int startIndex = (int)[reusableKeys indexOfObject:@(fromIndex)];
+    if (startIndex < 0) {
+        startIndex = 0;
     }
+    
+    for (int i = startIndex; i < (_rows * _columns * 3); i++) {
+        if (i < numberOfGrids) {
+            STGridCell *gridCell = nil;
+            if (reusableKeys.count > i) {
+                gridCell = (STGridCell *)[reusableGrids objectForKey:reusableKeys[i]];
+                GridIndex *gridIndex = [self gridIndexForIndex:i];
+                if (gridIndex.page == currentPage ||
+                    gridCell.gridIndex.page == currentPage) {
+                    [UIView animateWithDuration:0.5 animations:^{
+                        gridCell.frame = [self getFrameForCellAtGridIndex:gridIndex];
+                    }];
+                } else {
+                    gridCell.frame = [self getFrameForCellAtGridIndex:gridIndex];
+                }
+                gridCell.gridIndex = gridIndex;
+                [reusableGrids setObject:gridCell forKey:@(i+1)];
+            } else {
+                [self createGridAtIndex:i];
+            }
+        }
+    }
+    
     [self reloadData];
 }
 
@@ -575,102 +623,7 @@ static const float gridHeight = 147.0f;
 }
 
 /*
- Move animation for existing card to new position...
- */
--(void)moveGrid:(STGridCell *)grid AfterCompleted:(void (^)(void))completion
-{
-    CGRect frame = [self getFrameForCellAtGridIndex:grid.gridIndex];
-    
-    [UIView animateWithDuration:0.6 animations:^(void) {
-        grid.alpha = 1.0f;
-        grid.frame = (grid.gridIndex.page == currentPage) ? frame : (CGRect){grid.frame.origin.x + self.frame.size.width, frame.origin.y, frame.size};
-    }  completion:^(BOOL finished) {
-        grid.frame = frame;
-        if(completion)
-            completion();
-    }];
-}
-
-
-/*
- Hide animation fro existing card...
- After animation completion block will be executed.. Wchich can be used to release card memory and set new frame to card...
- */
--(void)hideGrid:(STGridCell *)grid AfterCompleted:(void (^)(void))completion
-{
-    [UIView animateWithDuration:0.3 animations:^(void) {
-         [grid setAlpha:0.0f];
-     }];
-    
-    [CATransaction begin];
-    [CATransaction setCompletionBlock:^(void) {
-         if(completion)
-             completion();
-    }];
-    
-    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
-    [animation setToValue:[NSNumber numberWithDouble:0.0]];
-    [animation setFromValue:[NSNumber numberWithDouble:1.0]];
-    [animation setDuration:0.3];
-    animation.delegate = self;
-    
-    [grid.layer addAnimation:animation forKey:@"Hide Grid"];
-    
-    [CATransaction commit];
-}
-
-/*
- Grow animation from existing card...
- After animation completion block will be executed.. Wchich can be used to set tag and datasource to card...
- */
--(void)showGrid:(STGridCell *)grid AfterCompleted:(void (^)(void))completion
-{
-    [UIView animateWithDuration:0.2 animations:^(void) {
-        grid.alpha = 1.0f;
-    }];
-    
-    [CATransaction begin];
-    [CATransaction setCompletionBlock:^(void)
-     {
-         if(completion)
-             completion();
-     }];
-    
-    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
-    [animation setToValue:[NSNumber numberWithDouble:1.0]];
-    [animation setFromValue:[NSNumber numberWithDouble:0.0]];
-    [animation setDuration:0.3];
-    animation.delegate = self;
-    
-    [grid.layer addAnimation:animation forKey:@"Show Grid"];
-    
-    [CATransaction commit];
-}
-
-
-#pragma mark - GridCell grid Index creation and frame/page calculation methods
-// =======================================================================================================================================>>
-/*
- To set new grid index for each card based on card index... Which will set frame and page for all grid...
- */
--(GridIndex *)gridIndexForIndex:(int)index
-{
-    int page = (index / (_columns * _rows));
-    int pos = (index % (_columns * _rows));
-    int column = (page * _columns) + (pos % _columns);
-    int row = (pos / _columns);
-    
-    GridIndex *gridIndex = [[GridIndex alloc] initWithColumn:column andRow:row];
-    gridIndex.index = index;
-    gridIndex.page = page;
-    return gridIndex;
-}
-
-
-#pragma mark - GridCell reuse and layout update methods
-// =======================================================================================================================================>>
-/*
- After inserting new card the remaing cards will be updated based on new index...
+ After removing cards from specific indexes the remaing cards will be updated based on new index...
  */
 -(void)updateCardsFromIndex:(int)index {
     [self updateCardsFromIndex:index toIndex:numberOfGrids];
@@ -702,21 +655,46 @@ static const float gridHeight = 147.0f;
                 gridCell.gridIndex = gridIndex;
                 gridCell.frame = frame;
             }
+            [reusableGrids setObject:gridCell forKey:@(i+1)];
         } else {
-            NSLog(@"Card not found : %d", index+1);
-            gridCell = [self createGridAtIndex:i];
+            [self createGridAtIndex:i];
         }
         
-        [reusableGrids setObject:gridCell forKey:@(i+1)];
         [reusableGrids removeObjectForKey:@(i+2)]; // +1 as index starts from 0; +1 to get next grid
     }
 }
 
-
-#pragma Mark Scrollview Delegates.....
-// =======================================================================================================================================>>
--(void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
+/*
+ Hide animation fro existing card...
+ After animation completion block will be executed.. Wchich can be used to release card memory and set new frame to card...
+ */
+-(void)hideGrid:(STGridCell *)grid AfterCompleted:(void (^)(void))completion
 {
+    [UIView animateWithDuration:0.3 animations:^(void) {
+         [grid setAlpha:0.0f];
+     }];
+    
+    [CATransaction begin];
+    [CATransaction setCompletionBlock:^(void) {
+         if(completion)
+             completion();
+    }];
+    
+    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+    [animation setToValue:[NSNumber numberWithDouble:0.0]];
+    [animation setFromValue:[NSNumber numberWithDouble:1.0]];
+    [animation setDuration:0.3];
+    animation.delegate = self;
+    
+    [grid.layer addAnimation:animation forKey:@"Hide Grid"];
+    
+    [CATransaction commit];
+}
+
+
+#pragma mark - Scrollview Delegates to perform card fall over animation
+// =======================================================================================================================================>>
+-(void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
     /*
      To get the scroller movement direction...
      */
@@ -731,8 +709,7 @@ static const float gridHeight = 147.0f;
 }
 
 
--(void)scrollViewDidScroll:(UIScrollView *)scrollView
-{
+-(void)scrollViewDidScroll:(UIScrollView *)scrollView {
     /*
      To paginate grids based on scroller page movement and to update page bar...
      */
@@ -777,8 +754,7 @@ static const float gridHeight = 147.0f;
 }
 
 
--(void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
-{
+-(void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
     /*
      To animate card fall for scroller movement direction...
      */
@@ -790,8 +766,7 @@ static const float gridHeight = 147.0f;
     [self scrollAnimationForGridsForState:YES];
 }
 
--(void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView
-{
+-(void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
     /*
      To update page bar based on scroller page...
      */
@@ -803,14 +778,13 @@ static const float gridHeight = 147.0f;
 
 
 
-#pragma Mark Scroll Animations.....
+#pragma mark - Card fall animations methods
 // =======================================================================================================================================>>
 /*
  To animate cards fall based on movement..
  To set initial position and to animate to the final position...
  */
--(void)scrollAnimationForGridsForState:(BOOL)state
-{
+-(void)scrollAnimationForGridsForState:(BOOL)state {
     float delay = 0.3;
     
     int page = (scrollDirection == GridScrollDirectionRight) ? (currentPage + 1) : (currentPage - 1);
@@ -832,14 +806,13 @@ static const float gridHeight = 147.0f;
     }
 }
 
--(void)animateGirdsInColumn:(int)column shouldAnimate:(BOOL)animate duration:(float)duration
-{
+-(void)animateGirdsInColumn:(int)column shouldAnimate:(BOOL)animate duration:(float)duration {
     int currentIndex = (column >= _columns) ? (((column / _columns) * _rows * _columns) + (column % _columns)) : column;
     
     for(int j= (column * _rows); j < ((column * _rows) + _rows); j++)
     {
         if(currentIndex >= 0) {
-            STGridCell *grid = [self cellForIndex:currentIndex];
+            STGridCell *grid = [self gridForIndex:currentIndex];
             grid.alpha = 1.0f;
             CGRect frame = [self getFrameForCellAtGridIndex:grid.gridIndex];
             
@@ -880,6 +853,27 @@ static const float gridHeight = 147.0f;
 // =======================================================================================================================================>>
 - (void) layoutSubviews {
     [super layoutSubviews];
+    
+    if (self.contentView) {
+        
+        dequeueGrids = [NSMutableDictionary dictionary];
+        reusableGrids = [NSMutableDictionary dictionary];
+        
+        for (UIView *view in [self.contentView subviews]) {
+            if ([view.class isKindOfClass:[STGridCell class]]) {
+                STGridCell *gridCell = (STGridCell *)view;
+                if (gridCell.identifier.length != 0) {
+                    id gridCellData = [NSKeyedArchiver archivedDataWithRootObject:gridCell];
+                    [dequeueGrids setObject:gridCellData forKey:gridCell.identifier];
+                }
+                [gridCell removeFromSuperview];
+            }
+        }
+        
+        [self.contentView removeFromSuperview];
+        self.contentView = nil;
+    }
+    
     CGSize layoutSize = self.bounds.size;
     if (priorLayoutSize.width != layoutSize.width) {
         priorLayoutSize = layoutSize;

@@ -29,9 +29,19 @@
 
 @implementation STGridCell
 @synthesize delegate = _delegate;
-@synthesize identifier = _identifier;
 @synthesize gridIndex = _gridIndex;
 @synthesize backgroundImage = _backgroundImage;
+@synthesize identifier = _identifier;
+
+#pragma mark - Init methods
+// =======================================================================================================================================>>
+-(id)initWithFrame:(CGRect)frame reusableIdnetifier:(NSString *)identifier {
+    self = [super initWithFrame:frame];
+    if (self) {
+        self.identifier = identifier;
+    }
+    return self;
+}
 
 
 #pragma mark - STGridCell tapGesture and delegate methods

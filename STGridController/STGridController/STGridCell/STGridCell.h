@@ -25,10 +25,12 @@
 @interface STGridCell : UIView
 
 @property (retain, nonatomic) id <STGridCellDelegate> delegate;
-@property (retain, nonatomic) UIImageView *backgroundImage;
-@property (retain, nonatomic) NSString *identifier;
 @property (retain, nonatomic) GridIndex *gridIndex;
 
+@property (retain, nonatomic) IBInspectable UIImageView *backgroundImage;
+@property (retain, nonatomic) IBInspectable NSString *identifier;
+
+-(id)initWithFrame:(CGRect)frame reusableIdnetifier:(NSString *)identifier;
 -(void)addTapgesture;
 
 @end

@@ -21,8 +21,49 @@
                         <subviews>
                             <scrollView clipsSubviews="YES" contentMode="scaleToFill" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" keyboardDismissMode="onDrag" translatesAutoresizingMaskIntoConstraints="NO" id="bYB-sd-XNY" customClass="STGridView">
                                 <rect key="frame" x="0.0" y="106" width="1112" height="642"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="arT-pL-RN4">
+                                        <rect key="frame" x="0.0" y="0.0" width="1112" height="642"/>
+                                        <subviews>
+                                            <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="XaJ-x0-q34" customClass="STGridCell">
+                                                <rect key="frame" x="45" y="45" width="195" height="147"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="c7k-GJ-xDr">
+                                                        <rect key="frame" x="76" y="63" width="42" height="21"/>
+                                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                </subviews>
+                                                <color key="backgroundColor" red="0.0" green="0.58980089430000004" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="height" constant="147" id="J8L-OW-6m2"/>
+                                                    <constraint firstAttribute="width" constant="195" id="eiF-Ef-Oue"/>
+                                                </constraints>
+                                                <userDefinedRuntimeAttributes>
+                                                    <userDefinedRuntimeAttribute type="string" keyPath="identifier" value="gridIdentifier"/>
+                                                </userDefinedRuntimeAttributes>
+                                            </view>
+                                        </subviews>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstItem="XaJ-x0-q34" firstAttribute="leading" secondItem="arT-pL-RN4" secondAttribute="leading" constant="45" id="Fyl-CQ-KkZ"/>
+                                            <constraint firstItem="XaJ-x0-q34" firstAttribute="top" secondItem="arT-pL-RN4" secondAttribute="top" constant="45" id="glp-uP-F2j"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
                                 <color key="backgroundColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstItem="arT-pL-RN4" firstAttribute="centerY" secondItem="bYB-sd-XNY" secondAttribute="centerY" id="8XT-js-3Sk"/>
+                                    <constraint firstItem="arT-pL-RN4" firstAttribute="centerX" secondItem="bYB-sd-XNY" secondAttribute="centerX" id="FSI-M2-Sx0"/>
+                                    <constraint firstItem="arT-pL-RN4" firstAttribute="top" secondItem="bYB-sd-XNY" secondAttribute="top" id="R8A-3J-KAc"/>
+                                    <constraint firstAttribute="trailing" secondItem="arT-pL-RN4" secondAttribute="trailing" id="T8w-UC-ydk"/>
+                                    <constraint firstItem="arT-pL-RN4" firstAttribute="leading" secondItem="bYB-sd-XNY" secondAttribute="leading" id="o0A-MP-Et6"/>
+                                    <constraint firstAttribute="bottom" secondItem="arT-pL-RN4" secondAttribute="bottom" id="sQv-d8-h6c"/>
+                                </constraints>
                                 <connections>
+                                    <outlet property="contentView" destination="arT-pL-RN4" id="YI3-8h-hp8"/>
                                     <outlet property="pageIndicator" destination="TLX-7O-K4J" id="01E-ir-lpn"/>
                                 </connections>
                             </scrollView>
@@ -36,7 +77,7 @@
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VDa-wS-wAg">
                                         <rect key="frame" x="238" y="0.0" width="42" height="30"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" constant="42" id="v9q-Fl-ZoQ"/>
+                                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="42" id="v9q-Fl-ZoQ"/>
                                         </constraints>
                                         <fontDescription key="fontDescription" type="system" weight="medium" pointSize="15"/>
                                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -60,47 +101,45 @@
                                     <outlet property="pageDisplay" destination="VDa-wS-wAg" id="ZQF-jM-CUD"/>
                                 </connections>
                             </view>
-                            <view clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="XaJ-x0-q34" customClass="STGridCell">
-                                <rect key="frame" x="319" y="482" width="195" height="147"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="c7k-GJ-xDr">
-                                        <rect key="frame" x="76" y="63" width="42" height="21"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <nil key="textColor"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                </subviews>
-                                <color key="backgroundColor" red="0.0" green="0.4793452024" blue="0.99908632040000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                            </view>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oq4-mI-V9B">
                                 <rect key="frame" x="20" y="49" width="75" height="40"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="40" id="fAi-FJ-OiR"/>
-                                    <constraint firstAttribute="width" constant="75" id="vzL-tD-c19"/>
+                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="75" id="vzL-tD-c19"/>
                                 </constraints>
-                                <state key="normal" title="Filter"/>
+                                <state key="normal" title="Remove"/>
                                 <connections>
                                     <action selector="filterGrids:" destination="BYZ-38-t0r" eventType="touchUpInside" id="bEF-hU-cYM"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="yjB-FT-LEO">
+                                <rect key="frame" x="145" y="49" width="75" height="40"/>
+                                <state key="normal" title="Insert"/>
+                                <connections>
+                                    <action selector="insertGrids:" destination="BYZ-38-t0r" eventType="touchUpInside" id="fmM-dy-7Bs"/>
                                 </connections>
                             </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
+                            <constraint firstItem="yjB-FT-LEO" firstAttribute="centerY" secondItem="oq4-mI-V9B" secondAttribute="centerY" id="54C-9w-E1V"/>
                             <constraint firstItem="TLX-7O-K4J" firstAttribute="centerX" secondItem="bYB-sd-XNY" secondAttribute="centerX" id="9EL-1i-PiE"/>
                             <constraint firstItem="oq4-mI-V9B" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="AuY-vt-K1L"/>
+                            <constraint firstItem="yjB-FT-LEO" firstAttribute="leading" secondItem="oq4-mI-V9B" secondAttribute="trailing" constant="50" id="IqX-2G-ev6"/>
                             <constraint firstItem="bYB-sd-XNY" firstAttribute="width" secondItem="8bC-Xf-vdC" secondAttribute="width" id="JEp-IZ-azN"/>
                             <constraint firstItem="bYB-sd-XNY" firstAttribute="height" secondItem="8bC-Xf-vdC" secondAttribute="height" multiplier="0.77" id="QC6-Ro-odQ"/>
                             <constraint firstItem="bYB-sd-XNY" firstAttribute="centerY" secondItem="6Tk-OE-BBY" secondAttribute="centerY" id="Ucu-Wh-fvz"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="oq4-mI-V9B" secondAttribute="trailing" constant="20" symbolic="YES" id="bad-7T-bFg"/>
+                            <constraint firstItem="yjB-FT-LEO" firstAttribute="width" secondItem="oq4-mI-V9B" secondAttribute="width" id="clA-Dv-Rke"/>
                             <constraint firstItem="oq4-mI-V9B" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="29" id="enW-9a-in7"/>
                             <constraint firstItem="TLX-7O-K4J" firstAttribute="top" secondItem="bYB-sd-XNY" secondAttribute="bottom" constant="-35" id="hKg-jS-Dnf"/>
                             <constraint firstItem="bYB-sd-XNY" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="hyK-HL-VXv"/>
+                            <constraint firstItem="yjB-FT-LEO" firstAttribute="height" secondItem="oq4-mI-V9B" secondAttribute="height" id="k1P-PS-ant"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="yjB-FT-LEO" secondAttribute="trailing" constant="20" symbolic="YES" id="kM7-wS-B5z"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
-                        <outlet property="gridCell" destination="XaJ-x0-q34" id="DWE-aK-2Hs"/>
                         <outlet property="gridView" destination="bYB-sd-XNY" id="tI4-5f-tHX"/>
                     </connections>
                 </viewController>

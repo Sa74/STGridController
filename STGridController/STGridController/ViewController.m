@@ -11,7 +11,6 @@
 
 @interface ViewController () <GridDelegate, GridDataSource>
 
-@property (strong, nonatomic) IBOutlet STGridCell *gridCell;
 @property (strong, nonatomic) NSMutableArray *dataArray;
 
 @end
@@ -29,13 +28,11 @@
     self.gridView.dataSource = self;
     self.gridView.gridDelegate = self;
     self.gridView.gridDelegate = self;
-    self.gridCell.hidden = true;
 }
 
 - (void) viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     [self.gridView reloadData];
-    self.gridCell.hidden = true;
 }
 
 - (IBAction)filterGrids:(id)sender {
@@ -48,28 +45,30 @@
     [self.gridView removeGridsAtIndexes:indexes];
 }
 
+- (IBAction)insertGrids:(id)sender {
+    NSMutableArray *indexes = [NSMutableArray arrayWithObjects:@1, @5, @8, @9, nil];
+    for (NSNumber *number in indexes) {
+        [self.dataArray insertObject:@"dataIn" atIndex:number.integerValue];
+    }
+//        [self.dataArray insertObject:@"data" atIndex:1];
+//        [self.gridView insertGridAtIndex:1];
+    [self.gridView insertGridsAtIndexes:indexes];
+}
+
+
 #pragma Grid Controller Data source and Delegates...
 // =======================================================================================================================================>>
 -(NSInteger)numberOfGrids {
     return self.dataArray.count;
 }
 
--(STGridCell *)gridView:(STGridView *)gridView cellForIndex:(int)index
-{
-    /*
-     Last index will be add server card...
-     Active server should be highlighted...
-     */
-    STGridCell *cell = [gridView cellForIndex:index];
+-(STGridCell *)gridView:(STGridView *)gridView cellForIndex:(int)index {
+    
+    STGridCell *cell = [gridView dequeuCellWithIdentifier:@"gridIdentifier" atIndex:index];
     if (!cell) {
-        self.gridCell.hidden = false;
-        NSData *tempArchive = [NSKeyedArchiver archivedDataWithRootObject:self.gridCell];
-        cell = [NSKeyedUnarchiver unarchiveObjectWithData:tempArchive];
+        cell = [[STGridCell alloc] initWithFrame:(CGRect){CGPointZero, 195.0f, 147.0f} reusableIdnetifier:@"gridIdentifier"];
+        cell.backgroundColor = [UIColor colorWithRed:0 green:150.0f/255.0f blue:1.0f alpha:1.0f];
     }
-    
-    ((UILabel *)[cell viewWithTag:1]).text = @(index).stringValue;
-    
-    self.gridCell.hidden = true;
     
     return cell;
 }
