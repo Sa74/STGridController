@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5E2C09EA2053EFC10019888B /* gridScroll.gif in Resources */ = {isa = PBXBuildFile; fileRef = 5E2C09E82053EFC10019888B /* gridScroll.gif */; };
+		5E2C09EB2053EFC10019888B /* insertAndDelete.gif in Resources */ = {isa = PBXBuildFile; fileRef = 5E2C09E92053EFC10019888B /* insertAndDelete.gif */; };
 		5E7D6B56204F117600B89DA0 /* STGridCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 5E7D6B55204F117600B89DA0 /* STGridCell.m */; };
 		5E8792222050682C009D961B /* STGridView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5E8792212050682C009D961B /* STGridView.m */; };
 		5E87922520507404009D961B /* STGridViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5E87922420507404009D961B /* STGridViewController.m */; };
@@ -20,6 +22,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		5E2C09E82053EFC10019888B /* gridScroll.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = gridScroll.gif; sourceTree = "<group>"; };
+		5E2C09E92053EFC10019888B /* insertAndDelete.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = insertAndDelete.gif; sourceTree = "<group>"; };
 		5E7D6B54204F117600B89DA0 /* STGridCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = STGridCell.h; sourceTree = "<group>"; };
 		5E7D6B55204F117600B89DA0 /* STGridCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = STGridCell.m; sourceTree = "<group>"; };
 		5E8792202050682C009D961B /* STGridView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = STGridView.h; sourceTree = "<group>"; };
@@ -111,6 +115,8 @@
 				5EE1E7D12041D83200FE6F89 /* LaunchScreen.storyboard */,
 				5EE1E7D42041D83200FE6F89 /* Info.plist */,
 				5EE1E7D52041D83200FE6F89 /* main.m */,
+				5E2C09E82053EFC10019888B /* gridScroll.gif */,
+				5E2C09E92053EFC10019888B /* insertAndDelete.gif */,
 			);
 			path = STGridController;
 			sourceTree = "<group>";
@@ -173,9 +179,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5E2C09EB2053EFC10019888B /* insertAndDelete.gif in Resources */,
 				5EE1E7D32041D83200FE6F89 /* LaunchScreen.storyboard in Resources */,
 				5EE1E7D02041D83200FE6F89 /* Assets.xcassets in Resources */,
 				5EE1E7CE2041D83200FE6F89 /* Main.storyboard in Resources */,
+				5E2C09EA2053EFC10019888B /* gridScroll.gif in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
