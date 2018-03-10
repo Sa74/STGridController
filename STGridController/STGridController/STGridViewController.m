@@ -3,7 +3,7 @@
 //  STGridController
 //
 //  Created by Sasi M on 08/03/13.
-//  Copyright © 2018 LeanSwift Inc. All rights reserved.
+//  Copyright © 2018 Sasi Moorthy. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy of
 //  this software and associated documentation files (the "Software"), to deal in
